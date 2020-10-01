@@ -1,42 +1,69 @@
 clear all
-filename = './wavout/NH-uramori-02.wav';
-[y, Fs] = audioread(filename);
-% plot(y)
-% T = 1/Fs;
-S = size(y);
-L = S(1);
-% t = (0:L-1)*T;
+% filename = 'NH-runnbasu-2.wav';
+% read = strcat('./filter/', filename);
+% fol = dir('./wavout/*.wav');
+fol = dir('./filter/*.wav');
+n = size(fol,1);
+fileID = fopen('./output/exp5.txt','w');
 
-plot(y)
+% filename = fol(13).name;
+% read = strcat('./filter/', filename);
+% fprintf(fileID, '%20s %20s %20s %20s\n', read, 'sp', 'ep', 'time');
+% leghtwriter(read, fileID);
 
-fileID = fopen('test.txt', 'w');
-fprintf(fileID, '%6s %12s\r\n', 'n', 'time(ms)');
-
-MAX = 20;
-S = 2.5e4;
-E = L - 1000;
-sp = StartPoint(S, y, E);
-ep = EndPoint(sp + MAX, y, E);
-i = 1;
-fprintf(fileID, '%6d %12d\r\n', i, (ep-sp));
-disp(i)
-disp(sp)
-disp(ep)
-disp(ep-sp)
-
-while(ep < E || sp < E)
-    sp = StartPoint(ep + MAX, y, E);
-    ep = EndPoint(sp + MAX, y, E);
-    if (ep - sp) > 1000
-        i = i + 1;
-        fprintf(fileID, '%6d %12d\r\n', i, (ep-sp));
-        disp(i)
-        disp(sp)
-        disp(ep)
-        disp(ep-sp)
-    end
+for i = 1:n
+    filename = fol(i).name;
+    fprintf(fileID, '\n%20s %20s %20s %20s\n', filename, 'sp', 'ep', 'time');
+    read = strcat('./filter/', filename);
+    leghtwriter(read, fileID);
 end
 
+
+% fprintf(fileID, '%20s %20s %20s %20s\n', filename, 'sp', 'ep', 'time');
+% leghtwriter(read, fileID);
+
+
+function leghtwriter(filename, fileID)
+    [y, Fs] = audioread(filename);
+    % T = 1/Fs;
+    S = size(y);
+    L = S(1);
+    % t = (0:L-1)*T;
+
+%     plot(y)
+
+    MAX = 20;
+    S = 2e4;
+    E = L - 1000;
+    sp = StartPoint(S, y, E);
+    ep = EndPoint(sp + MAX, y, E);
+    i = 1;
+    fprintf(fileID, '%20d %20f %20f %20f\n', i, sp/Fs*1000, ep/Fs*1000, (ep-sp)/Fs*1000);
+    % disp(i)
+    % disp(sp/Fs)
+    % disp(ep/Fs)
+    % disp((ep-sp)/Fs)
+%     disp(i)
+%     disp(sp)
+%     disp(ep)
+%     disp(ep-sp)
+    while(ep < E || sp < E)
+        sp = StartPoint(ep + MAX, y, E);
+        ep = EndPoint(sp + MAX, y, E);
+        if (ep - sp) > 1000
+            i = i + 1;
+            fprintf(fileID, '%20d %20f %20f %20f\n', i, sp/Fs*1000, ep/Fs*1000, (ep-sp)/Fs*1000);
+    %         disp(i)
+    %         disp(sp/Fs)
+    %         disp(ep/Fs)
+    %         disp((ep-sp)/Fs)        
+%             disp(i)
+%             disp(sp)
+%             disp(ep)
+%             disp(ep-sp)
+        end
+    end
+end
 function sp = StartPoint(head, y, E)
     MAX = 50;
     F = zeros(1, MAX);
@@ -51,7 +78,7 @@ function sp = StartPoint(head, y, E)
         D = abs(D);
     end
     while(true)
-        if D > 0.013 | (head+MAX) > E
+        if D > 0.001 | (head+MAX) > E
             break;
         else
             head = head + 1;
@@ -82,7 +109,7 @@ function ep = EndPoint(head, y, E)
         D = abs(D);
     end
     while(true)
-        if D < 0.004 | (head+MAX) > E
+        if D < 0.001 | (head+MAX) > E
             break;
         else
             head = head + 1;
